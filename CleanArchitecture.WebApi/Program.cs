@@ -1,5 +1,6 @@
-using CleanArchitecture.Application.Configurations.DependencyInjection;
-using CleanArchitecture.Infrastructure.Configurations.DependencyInjection;
+using CleanArchitecture.Application.Configurations;
+using CleanArchitecture.Infrastructure.Configurations;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

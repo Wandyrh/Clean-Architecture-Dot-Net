@@ -4,7 +4,7 @@ using CleanArchitecture.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
-namespace CleanArchitecture.Infrastructure.Configurations.DependencyInjection;
+namespace CleanArchitecture.Infrastructure.Configurations;
 
 public static class DependencyInjection
 {
