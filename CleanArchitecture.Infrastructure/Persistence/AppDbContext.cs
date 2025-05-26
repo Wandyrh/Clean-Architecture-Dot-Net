@@ -10,8 +10,8 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<Product> Products { get; set; }
-    public DbSet<ProductCategory> ProductCategories { get; set; }
+    public DbSet<Product> Product { get; set; }
+    public DbSet<ProductCategory> ProductCategory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

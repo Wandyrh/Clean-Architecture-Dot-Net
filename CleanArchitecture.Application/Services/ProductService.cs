@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using CleanArchitecture.Application.Common.Extensions;
+using CleanArchitecture.Application.Common.Models;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Application.Services;
 
@@ -54,5 +58,16 @@ public class ProductService : IProductService
 
         await _unitOfWork.Products.RemoveAsync(product);
         await _unitOfWork.SaveChangesAsync();
-    }  
+    }
+
+    public async Task<PagedResult<ProductDto>> GetPagedAsync(int page, int pageSize)
+    {
+        var query = _unitOfWork.Products
+            .GetAll()
+            .AsNoTracking()
+            .OrderBy(_ => _.Name)
+            .ProjectTo<ProductDto>(_mapper.ConfigurationProvider);
+
+        return await query.ToPagedResultAsync(page, pageSize);
+    }
 }

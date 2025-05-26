@@ -2,7 +2,7 @@
 
 namespace CleanArchitecture.Domain.Interfaces;
 
-public interface IProductRepository : IRepository<Product>
+public interface IProductRepository : IGenericRepository<Product>
 {
     Task<IEnumerable<Product>> GetByCategoryIdAsync(Guid categoryId);
 }

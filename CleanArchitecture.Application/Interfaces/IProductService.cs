@@ -1,4 +1,5 @@
-﻿using CleanArchitecture.Application.DTOs;
+﻿using CleanArchitecture.Application.Common.Models;
+using CleanArchitecture.Application.DTOs;
 
 namespace CleanArchitecture.Application.Interfaces;
 
@@ -9,4 +10,5 @@ public interface IProductService
     Task AddAsync(CreateProductDto product);
     Task UpdateAsync(UpdateProductDto product);
     Task DeleteAsync(Guid id);
+    Task<PagedResult<ProductDto>> GetPagedAsync(int page, int pageSize);
 }

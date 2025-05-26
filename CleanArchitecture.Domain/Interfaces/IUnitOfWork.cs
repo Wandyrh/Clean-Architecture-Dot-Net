@@ -4,8 +4,8 @@ namespace CleanArchitecture.Domain.Interfaces;
 
 public interface IUnitOfWork
 {
-    IRepository<Product> Products { get; }
-    IRepository<ProductCategory> Categories { get; }
+    IGenericRepository<Product> Products { get; }
+    IGenericRepository<ProductCategory> Categories { get; }
 
     Task<int> SaveChangesAsync();
 }

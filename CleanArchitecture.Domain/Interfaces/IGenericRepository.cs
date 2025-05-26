@@ -2,7 +2,7 @@
 
 namespace CleanArchitecture.Domain.Interfaces;
 
-public interface IRepository<T> where T : class
+public interface IGenericRepository<T> where T : class
 {
     Task<IEnumerable<T>> GetAllAsync();
     Task<T?> GetByIdAsync(Guid id);
@@ -19,4 +19,5 @@ public interface IRepository<T> where T : class
 
     Task<bool> ExistsAsync(Guid id);
     Task<int> CountAsync();
+    IQueryable<T> GetAll();
 }
