@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Infrastructure.Persistence.Repositories;
 
-public class ProductRepository : Repository<Product>, IProductRepository
+public class ProductRepository : GenericRepository<Product>, IProductRepository
 {
-    public ProductRepository(DbContext context) : base(context)
+    public ProductRepository(AppDbContext context) : base(context)
     {
     }
 

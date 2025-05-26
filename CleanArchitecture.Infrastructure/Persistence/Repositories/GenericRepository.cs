@@ -5,12 +5,12 @@ namespace CleanArchitecture.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-public class Repository<T> : IRepository<T> where T : class
+public class GenericRepository<T> : IGenericRepository<T> where T : class
 {
     protected readonly DbContext _context;
     protected readonly DbSet<T> _dbSet;
 
-    public Repository(DbContext context)
+    public GenericRepository(DbContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();
@@ -18,6 +18,8 @@ public class Repository<T> : IRepository<T> where T : class
 
     public async Task<IEnumerable<T>> GetAllAsync() =>
         await _dbSet.ToListAsync();
+    public IQueryable<T> GetAll() =>
+         _dbSet.AsQueryable();
 
     public async Task<T?> GetByIdAsync(Guid id) =>
         await _dbSet.FindAsync(id);

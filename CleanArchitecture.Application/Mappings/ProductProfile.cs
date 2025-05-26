@@ -6,8 +6,10 @@ namespace CleanArchitecture.Application.Mappings;
 
 public class ProductProfile : Profile
 {
-    protected ProductProfile()
+    public ProductProfile()
     {
         CreateMap<Product, ProductDto>().ReverseMap();
+        CreateMap<Product, CreateProductDto>().ReverseMap();
+        CreateMap<Product, UpdateProductDto>().ReverseMap();
     }
 }
