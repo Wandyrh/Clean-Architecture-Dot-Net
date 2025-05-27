@@ -50,6 +50,8 @@ public class ProductsController : ApiControllerBase<ProductsController>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
     {
+        await ValidateRequest(dto);
+
         if (id != dto.Id)
             return BadRequest(ApiResult<string>.Fail("ID mismatch"));
 
