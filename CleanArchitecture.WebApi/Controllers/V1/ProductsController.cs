@@ -2,20 +2,24 @@
 using CleanArchitecture.Application.Common.Models;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.WebApi.Controllers.Base;
 using CleanArchitecture.WebApi.Models;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanArchitecture.WebApi.Controllers.V1;
 
 [ApiVersion("1.0")]
 [Route("api/v1/[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController : ApiControllerBase<ProductsController>
 {
-    private readonly IProductService _productService;
+    private readonly IProductService _productService;   
 
-    public ProductsController(IProductService productService)
+    public ProductsController(ILogger<ProductsController> logger,
+        Dictionary<Type, IValidator> validators,
+        IProductService productService) : base(logger, validators)
     {
-        _productService = productService;
+        _productService = productService ?? throw new ArgumentNullException(nameof(productService));        
     }
 
     [HttpGet]
@@ -38,6 +42,7 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
     {
+        await ValidateRequest(dto);
         await _productService.AddAsync(dto);
         return Ok(ApiResult<string>.SuccessResult("Product created successfully"));
     }
