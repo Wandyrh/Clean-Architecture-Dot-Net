@@ -1,4 +1,4 @@
-﻿namespace CleanArchitecture.WebApi.Models;
+﻿namespace CleanArchitecture.WebApi.Common.Models;
 
 public class ApiResult<T>
 {

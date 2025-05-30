@@ -15,5 +15,4 @@ public static class DependencyInjection
         services.AddScoped<IProductService, ProductService>();
         return services;
     }
-
 }

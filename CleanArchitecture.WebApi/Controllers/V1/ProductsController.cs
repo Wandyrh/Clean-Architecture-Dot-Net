@@ -2,8 +2,8 @@
 using CleanArchitecture.Application.Common.Models;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.WebApi.Common.Models;
 using CleanArchitecture.WebApi.Controllers.Base;
-using CleanArchitecture.WebApi.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
