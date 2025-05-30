@@ -1,4 +1,4 @@
-﻿using CleanArchitecture.WebApi.Models;
+﻿using CleanArchitecture.WebApi.Common.Models;
 using FluentValidation;
 using Newtonsoft.Json;
 using System.Net;

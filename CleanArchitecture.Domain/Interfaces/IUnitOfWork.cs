@@ -1,11 +1,9 @@
-﻿using CleanArchitecture.Domain.Entities;
-
-namespace CleanArchitecture.Domain.Interfaces;
+﻿namespace CleanArchitecture.Domain.Interfaces;
 
 public interface IUnitOfWork
 {
-    IGenericRepository<Product> Products { get; }
-    IGenericRepository<ProductCategory> Categories { get; }
+    IProductRepository Products { get; }
+    IProductCategoryRepository Categories { get; }
 
     Task<int> SaveChangesAsync();
 }
