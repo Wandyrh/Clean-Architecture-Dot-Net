@@ -1,4 +1,5 @@
-﻿using CleanArchitecture.WebApi.Common.Models;
+﻿using CleanArchitecture.Application.Common.Exceptions;
+using CleanArchitecture.WebApi.Common.Models;
 using FluentValidation;
 using Newtonsoft.Json;
 using System.Net;
@@ -37,17 +38,20 @@ public class GlobalExceptionHandlerMiddleware
         };
 
         context.Response.ContentType = "application/json";
+        apiResult.Message = exception.Message;
 
         switch (exception)
         {
             case ArgumentException:
-                apiResult.Message = exception.Message;
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 break;
             case ValidationException:
-                apiResult.Message = exception.Message;
+            case IDMismatchException:
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                break;          
+                break;
+            case NotFoundException:
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                break;
             default:
                 apiResult.Message = "Internal Server Error";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

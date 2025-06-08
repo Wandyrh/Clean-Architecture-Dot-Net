@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Extensions;
 using CleanArchitecture.Application.Common.Helpers;
 using CleanArchitecture.Application.Common.Models;
@@ -28,10 +29,13 @@ public class UserService : IUserService
         return _mapper.Map<IEnumerable<UserDto>>(users);
     }
 
-    public async Task<UserDto?> GetByIdAsync(Guid id)
+    public async Task<UserDto> GetByIdAsync(Guid id)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(id);
-        return user is null ? null : _mapper.Map<UserDto>(user);
+        if (user is null)
+            throw new NotFoundException("User was not found");
+
+        return _mapper.Map<UserDto>(user);
     }
 
     public async Task AddAsync(CreateUserDto dto)
@@ -44,10 +48,15 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(UpdateUserDto dto)
+    public async Task UpdateAsync(UpdateUserDto dto, Guid id)
     {
+        if (id != dto.Id)
+            throw new IDMismatchException("ID mismatch");
+           
+
         var user = await _unitOfWork.Users.GetByIdAsync(dto.Id);
-        if (user is null) return;
+        if (user is null)
+            throw new NotFoundException($"User {dto.Id} was not found");
 
         _mapper.Map(dto, user);
 
@@ -58,7 +67,8 @@ public class UserService : IUserService
     public async Task DeleteAsync(Guid id)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(id);
-        if (user is null) return;
+        if (user is null)
+            throw new NotFoundException("User was not found");
 
         await _unitOfWork.Users.RemoveAsync(user);
         await _unitOfWork.SaveChangesAsync();
