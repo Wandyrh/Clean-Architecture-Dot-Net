@@ -6,9 +6,9 @@ namespace CleanArchitecture.Application.Interfaces;
 public interface IUserService
 {
     Task<IEnumerable<UserDto>> GetAllAsync();
-    Task<UserDto?> GetByIdAsync(Guid id);
+    Task<UserDto> GetByIdAsync(Guid id);
     Task AddAsync(CreateUserDto product);
-    Task UpdateAsync(UpdateUserDto product);
+    Task UpdateAsync(UpdateUserDto product, Guid id);
     Task DeleteAsync(Guid id);
     Task<PagedResult<UserDto>> GetPagedAsync(int page, int pageSize);
 }

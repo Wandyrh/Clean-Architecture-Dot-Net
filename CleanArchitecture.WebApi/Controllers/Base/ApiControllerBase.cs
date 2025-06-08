@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using CleanArchitecture.Application.DTOs;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanArchitecture.WebApi.Controllers.Base
@@ -35,5 +36,10 @@ namespace CleanArchitecture.WebApi.Controllers.Base
             throw new ValidationException(result.Errors);
         }
 
+        protected async Task ValidateBaseEntity(Guid id)
+        {
+            var request = new BaseEntityDto() { Id = id };
+            await ValidateRequest(request);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Extensions;
 using CleanArchitecture.Application.Common.Models;
 using CleanArchitecture.Application.DTOs;
@@ -27,23 +28,32 @@ public class ProductService : IProductService
         return _mapper.Map<IEnumerable<ProductDto>>(products);
     }
 
-    public async Task<ProductDto?> GetByIdAsync(Guid id)
+    public async Task<ProductDto> GetByIdAsync(Guid id)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
-        return product is null ? null : _mapper.Map<ProductDto>(product);
+        if (product is null)
+            throw new NotFoundException("Product was not found");
+
+        return _mapper.Map<ProductDto>(product);
     }
 
     public async Task AddAsync(CreateProductDto dto)
     {
         var product = _mapper.Map<Product>(dto);
+        product.CreatedAt = DateTime.UtcNow;
+        product.CreatedBy = Guid.NewGuid();
         await _unitOfWork.Products.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(UpdateProductDto dto)
+    public async Task UpdateAsync(UpdateProductDto dto, Guid id)
     {
+        if (id != dto.Id)
+            throw new IDMismatchException("ID mismatch");
+
         var product = await _unitOfWork.Products.GetByIdAsync(dto.Id);
-        if (product is null) return;
+        if (product is null)
+            throw new NotFoundException($"Product {dto.Id} was not found");
 
         _mapper.Map(dto, product);
 
@@ -54,7 +64,8 @@ public class ProductService : IProductService
     public async Task DeleteAsync(Guid id)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
-        if (product is null) return;
+        if (product is null)
+            throw new NotFoundException("Product was not found");
 
         await _unitOfWork.Products.RemoveAsync(product);
         await _unitOfWork.SaveChangesAsync();

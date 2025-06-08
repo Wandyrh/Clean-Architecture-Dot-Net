@@ -32,10 +32,8 @@ public class UsersController : ApiControllerBase<UsersController>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        await ValidateBaseEntity(id);
         var user = await _UserService.GetByIdAsync(id);
-        if (user == null)
-            return NotFound(ApiResult<string>.Fail("User not found"));
-
         return Ok(ApiResult<UserDto>.SuccessResult(user));
     }
 
@@ -50,18 +48,16 @@ public class UsersController : ApiControllerBase<UsersController>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserDto dto)
     {
+        await ValidateBaseEntity(id);
         await ValidateRequest(dto);
-
-        if (id != dto.Id)
-            return BadRequest(ApiResult<string>.Fail("ID mismatch"));
-
-        await _UserService.UpdateAsync(dto);
+        await _UserService.UpdateAsync(dto, id);
         return Ok(ApiResult<string>.SuccessResult("User updated successfully"));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        await ValidateBaseEntity(id);
         await _UserService.DeleteAsync(id);
         return Ok(ApiResult<string>.SuccessResult("User deleted successfully"));
     }

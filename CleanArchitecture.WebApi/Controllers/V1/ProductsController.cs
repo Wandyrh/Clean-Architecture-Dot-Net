@@ -32,10 +32,8 @@ public class ProductsController : ApiControllerBase<ProductsController>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        await ValidateBaseEntity(id);
         var product = await _productService.GetByIdAsync(id);
-        if (product == null)
-            return NotFound(ApiResult<string>.Fail("Product not found"));
-
         return Ok(ApiResult<ProductDto>.SuccessResult(product));
     }
 
@@ -50,12 +48,9 @@ public class ProductsController : ApiControllerBase<ProductsController>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
     {
+        await ValidateBaseEntity(id);
         await ValidateRequest(dto);
-
-        if (id != dto.Id)
-            return BadRequest(ApiResult<string>.Fail("ID mismatch"));
-
-        await _productService.UpdateAsync(dto);
+        await _productService.UpdateAsync(dto, id);
         return Ok(ApiResult<string>.SuccessResult("Product updated successfully"));
     }
 
