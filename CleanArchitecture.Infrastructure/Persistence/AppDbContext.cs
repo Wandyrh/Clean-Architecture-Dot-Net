@@ -1,4 +1,4 @@
-﻿using CleanArchitecture.Domain.Entities;
+﻿using CleanArchitecture.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Infrastructure.Persistence;
@@ -8,16 +8,12 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
-    }
+    }   
 
-    public DbSet<Product> Product { get; set; }
-    public DbSet<ProductCategory> ProductCategory { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<Product>().HasKey(p => p.Id);
-        modelBuilder.Entity<ProductCategory>().HasKey(p => p.Id);
+        builder.ApplyConfiguration(new ProductConfiguration());
+        builder.ApplyConfiguration(new ProductCategoryConfiguration());
+        builder.ApplyConfiguration(new UserConfiguration());        
     }
 }
