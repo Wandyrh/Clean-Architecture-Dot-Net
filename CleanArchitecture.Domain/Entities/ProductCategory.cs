@@ -2,7 +2,7 @@
 
 namespace CleanArchitecture.Domain.Entities;
 
-public class ProductCategory : BaseEntity
+public class ProductCategory : AuditableEntity
 {   
     public string Name { get; set; }
     public string Description { get; set; }    
