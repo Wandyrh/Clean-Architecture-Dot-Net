@@ -47,7 +47,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     public Task RemoveAsync(T entity)
     {
-        _dbSet.Remove(entity);
+        if (entity is ISoftDeletable deletableEntity)
+        {
+            deletableEntity.IsDeleted = true;
+            _dbSet.Update(entity);
+        }
+        else
+        {
+            _dbSet.Remove(entity);
+        }
+
         return Task.CompletedTask;
     }
 

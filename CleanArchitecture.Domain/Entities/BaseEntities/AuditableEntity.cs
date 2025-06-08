@@ -1,6 +1,8 @@
-﻿namespace CleanArchitecture.Domain.Entities.BaseEntities;
+﻿using CleanArchitecture.Domain.Interfaces;
 
-public abstract class AuditableEntity : BaseEntity
+namespace CleanArchitecture.Domain.Entities.BaseEntities;
+
+public abstract class AuditableEntity : BaseEntity, ISoftDeletable
 {
     public DateTime CreatedAt { get; set; }
     public Guid CreatedBy { get; set; }
