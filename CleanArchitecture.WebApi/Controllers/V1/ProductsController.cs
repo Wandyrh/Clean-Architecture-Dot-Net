@@ -5,10 +5,12 @@ using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.WebApi.Common.Models;
 using CleanArchitecture.WebApi.Controllers.Base;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanArchitecture.WebApi.Controllers.V1;
 
+[Authorize]
 [ApiVersion("1.0")]
 [Route("api/v1/[controller]")]
 public class ProductsController : ApiControllerBase<ProductsController>
