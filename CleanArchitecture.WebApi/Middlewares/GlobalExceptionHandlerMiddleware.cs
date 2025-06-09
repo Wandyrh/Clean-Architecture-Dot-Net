@@ -43,6 +43,7 @@ public class GlobalExceptionHandlerMiddleware
         switch (exception)
         {
             case ArgumentException:
+            case InvalidOperationException:
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 break;
             case ValidationException:
