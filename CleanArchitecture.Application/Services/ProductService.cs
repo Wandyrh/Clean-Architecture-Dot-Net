@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Extensions;
 using CleanArchitecture.Application.Common.Models;
+using CleanArchitecture.Application.Common;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Domain.Entities;
@@ -32,7 +33,7 @@ public class ProductService : IProductService
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product is null)
-            throw new NotFoundException("Product was not found");
+            throw new NotFoundException(AppMessages.ProductNotFound);
 
         return _mapper.Map<ProductDto>(product);
     }
@@ -50,11 +51,11 @@ public class ProductService : IProductService
     public async Task UpdateAsync(UpdateProductDto dto, Guid id, Guid userId)
     {
         if (id != dto.Id)
-            throw new IDMismatchException("ID mismatch");
+            throw new IDMismatchException(AppMessages.ProductIdMismatch);
 
         var product = await _unitOfWork.Products.GetByIdAsync(dto.Id);
         if (product is null)
-            throw new NotFoundException($"Product {dto.Id} was not found");
+            throw new NotFoundException(AppMessages.ProductNotFound);
 
         product.ModifiedAt = DateTime.UtcNow;
         product.ModifiedBy = userId;
@@ -68,7 +69,7 @@ public class ProductService : IProductService
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product is null)
-            throw new NotFoundException("Product was not found");
+            throw new NotFoundException(AppMessages.ProductNotFound);
        
         product.DeletedAt = DateTime.UtcNow;
         product.DeletedBy = userId;

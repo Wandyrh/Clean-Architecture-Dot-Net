@@ -3,6 +3,7 @@ using CleanArchitecture.Application.Common.Models;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.WebApi.Common.Models;
+using CleanArchitecture.WebApi.Common;
 using CleanArchitecture.WebApi.Controllers.Base;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -45,7 +46,7 @@ public class UsersController : ApiControllerBase<UsersController>
         var userId = await ValidateTokenUserId();
         await ValidateRequest(dto);
         await _UserService.AddAsync(dto, userId);
-        return Ok(ApiResult<string>.SuccessResult("User created successfully"));
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.UserCreated));
     }
 
     [HttpPut("{id:guid}")]
@@ -55,7 +56,7 @@ public class UsersController : ApiControllerBase<UsersController>
         await ValidateBaseEntity(id);
         await ValidateRequest(dto);
         await _UserService.UpdateAsync(dto, id, userId);
-        return Ok(ApiResult<string>.SuccessResult("User updated successfully"));
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.UserUpdated));
     }
 
     [HttpDelete("{id:guid}")]
@@ -64,7 +65,7 @@ public class UsersController : ApiControllerBase<UsersController>
         var userId = await ValidateTokenUserId();
         await ValidateBaseEntity(id);
         await _UserService.DeleteAsync(id, userId);
-        return Ok(ApiResult<string>.SuccessResult("User deleted successfully"));
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.UserDeleted));
     }
 
     [HttpGet("paged")]

@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using CleanArchitecture.Application.Common;
 
 namespace CleanArchitecture.Application.Services;
 
@@ -25,7 +26,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var user = await _unitOfWork.Users.GetUserByEmailAsync(login.UserName);
         if (user is null)
-            throw new InvalidLoginException("Invalid credentials.");
+            throw new InvalidLoginException(AppMessages.InvalidCredentials);
 
         var hash = HashHelper.GenerateSha256Hash(login.Password);
         if (user.Password == hash)
@@ -60,6 +61,6 @@ public class AuthenticationService : IAuthenticationService
             };
         }
 
-        throw new InvalidLoginException("Invalid credentials.");
+        throw new InvalidLoginException(AppMessages.InvalidCredentials);
     }
 }

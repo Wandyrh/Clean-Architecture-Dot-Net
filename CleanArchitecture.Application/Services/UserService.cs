@@ -9,6 +9,7 @@ using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using CleanArchitecture.Application.Common;
 
 namespace CleanArchitecture.Application.Services;
 
@@ -33,7 +34,7 @@ public class UserService : IUserService
     {
         var user = await _unitOfWork.Users.GetByIdAsync(id);
         if (user is null)
-            throw new NotFoundException("User was not found");
+            throw new NotFoundException(AppMessages.UserNotFound);
 
         return _mapper.Map<UserDto>(user);
     }
@@ -52,11 +53,11 @@ public class UserService : IUserService
     public async Task UpdateAsync(UpdateUserDto dto, Guid id, Guid userId)
     {
         if (id != dto.Id)
-            throw new IDMismatchException("ID mismatch");
+            throw new IDMismatchException(AppMessages.UserIdMismatch);
 
         var user = await _unitOfWork.Users.GetByIdAsync(dto.Id);
         if (user is null)
-            throw new NotFoundException($"User {dto.Id} was not found");
+            throw new NotFoundException(AppMessages.UserNotFound);
 
         user.ModifiedAt = DateTime.UtcNow;
         user.ModifiedBy = userId;
@@ -70,7 +71,7 @@ public class UserService : IUserService
     {
         var user = await _unitOfWork.Users.GetByIdAsync(id);
         if (user is null)
-            throw new NotFoundException("User was not found");
+            throw new NotFoundException(AppMessages.UserNotFound);
         
         user.DeletedAt = DateTime.UtcNow;
         user.DeletedBy = userId;

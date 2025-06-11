@@ -3,6 +3,7 @@ using CleanArchitecture.Application.Common.Models;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.WebApi.Common.Models;
+using CleanArchitecture.WebApi.Common;
 using CleanArchitecture.WebApi.Controllers.Base;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +47,7 @@ public class ProductCategoriesController : ApiControllerBase<ProductCategoriesCo
         var userId = await ValidateTokenUserId();
         await ValidateRequest(dto);
         await _categoryService.AddAsync(dto, userId);
-        return Ok(ApiResult<string>.SuccessResult("Product category created successfully"));
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.ProductCategoryCreated));
     }
 
     [HttpPut("{id:guid}")]
@@ -56,7 +57,7 @@ public class ProductCategoriesController : ApiControllerBase<ProductCategoriesCo
         await ValidateBaseEntity(id);
         await ValidateRequest(dto);
         await _categoryService.UpdateAsync(dto, id, userId);
-        return Ok(ApiResult<string>.SuccessResult("Product category updated successfully"));
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.ProductCategoryUpdated));
     }
 
     [HttpDelete("{id:guid}")]
@@ -64,7 +65,7 @@ public class ProductCategoriesController : ApiControllerBase<ProductCategoriesCo
     {
         var userId = await ValidateTokenUserId();
         await _categoryService.DeleteAsync(id, userId);
-        return Ok(ApiResult<string>.SuccessResult("Product category deleted successfully"));
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.ProductCategoryDeleted));
     }
 
     [HttpGet("paged")]
