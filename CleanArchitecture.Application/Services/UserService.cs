@@ -38,37 +38,42 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task AddAsync(CreateUserDto dto)
+    public async Task AddAsync(CreateUserDto dto, Guid userId)
     {
         var user = _mapper.Map<User>(dto);
         user.Password = HashHelper.GenerateSha256Hash(dto.Password);
         user.CreatedAt = DateTime.UtcNow;
-        user.CreatedBy = Guid.NewGuid();
+        user.CreatedBy = userId;
+
         await _unitOfWork.Users.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(UpdateUserDto dto, Guid id)
+    public async Task UpdateAsync(UpdateUserDto dto, Guid id, Guid userId)
     {
         if (id != dto.Id)
             throw new IDMismatchException("ID mismatch");
-           
 
         var user = await _unitOfWork.Users.GetByIdAsync(dto.Id);
         if (user is null)
             throw new NotFoundException($"User {dto.Id} was not found");
 
+        user.ModifiedAt = DateTime.UtcNow;
+        user.ModifiedBy = userId;
         _mapper.Map(dto, user);
 
         await _unitOfWork.Users.UpdateAsync(user);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(id);
         if (user is null)
             throw new NotFoundException("User was not found");
+        
+        user.DeletedAt = DateTime.UtcNow;
+        user.DeletedBy = userId;
 
         await _unitOfWork.Users.RemoveAsync(user);
         await _unitOfWork.SaveChangesAsync();

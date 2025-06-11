@@ -15,13 +15,13 @@ namespace CleanArchitecture.WebApi.Controllers.V1;
 [Route("api/v1/[controller]")]
 public class ProductsController : ApiControllerBase<ProductsController>
 {
-    private readonly IProductService _productService;   
+    private readonly IProductService _productService;
 
     public ProductsController(ILogger<ProductsController> logger,
         Dictionary<Type, IValidator> validators,
         IProductService productService) : base(logger, validators)
     {
-        _productService = productService ?? throw new ArgumentNullException(nameof(productService));        
+        _productService = productService ?? throw new ArgumentNullException(nameof(productService));
     }
 
     [HttpGet]
@@ -42,24 +42,27 @@ public class ProductsController : ApiControllerBase<ProductsController>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateRequest(dto);
-        await _productService.AddAsync(dto);
+        await _productService.AddAsync(dto, userId);
         return Ok(ApiResult<string>.SuccessResult("Product created successfully"));
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateBaseEntity(id);
         await ValidateRequest(dto);
-        await _productService.UpdateAsync(dto, id);
+        await _productService.UpdateAsync(dto, id, userId);
         return Ok(ApiResult<string>.SuccessResult("Product updated successfully"));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _productService.DeleteAsync(id);
+        var userId = await ValidateTokenUserId();
+        await _productService.DeleteAsync(id, userId);
         return Ok(ApiResult<string>.SuccessResult("Product deleted successfully"));
     }
 

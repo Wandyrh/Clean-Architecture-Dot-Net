@@ -43,24 +43,27 @@ public class ProductCategoriesController : ApiControllerBase<ProductCategoriesCo
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductCategoryDto dto)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateRequest(dto);
-        await _categoryService.AddAsync(dto);
+        await _categoryService.AddAsync(dto, userId);
         return Ok(ApiResult<string>.SuccessResult("Product category created successfully"));
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductCategoryDto dto)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateBaseEntity(id);
         await ValidateRequest(dto);
-        await _categoryService.UpdateAsync(dto, id);
+        await _categoryService.UpdateAsync(dto, id, userId);
         return Ok(ApiResult<string>.SuccessResult("Product category updated successfully"));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _categoryService.DeleteAsync(id);
+        var userId = await ValidateTokenUserId();
+        await _categoryService.DeleteAsync(id, userId);
         return Ok(ApiResult<string>.SuccessResult("Product category deleted successfully"));
     }
 

@@ -37,16 +37,17 @@ public class ProductCategoryService : IProductCategoryService
         return _mapper.Map<ProductCategoryDto>(category);
     }
 
-    public async Task AddAsync(CreateProductCategoryDto dto)
+    public async Task AddAsync(CreateProductCategoryDto dto, Guid userId)
     {
         var category = _mapper.Map<ProductCategory>(dto);
         category.CreatedAt = DateTime.UtcNow;
-        category.CreatedBy = Guid.NewGuid();
+        category.CreatedBy = userId;
+
         await _unitOfWork.Categories.AddAsync(category);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(UpdateProductCategoryDto dto, Guid id)
+    public async Task UpdateAsync(UpdateProductCategoryDto dto, Guid id, Guid userId)
     {
         if (id != dto.Id)
             throw new IDMismatchException("ID mismatch");
@@ -55,17 +56,22 @@ public class ProductCategoryService : IProductCategoryService
         if (category is null)
             throw new NotFoundException($"Product Category {dto.Id} was not found");
 
+        category.ModifiedAt = DateTime.UtcNow;
+        category.ModifiedBy = userId;
         _mapper.Map(dto, category);
 
         await _unitOfWork.Categories.UpdateAsync(category);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(id);
         if (category is null)
             throw new NotFoundException("Product Category was not found");
+        
+        category.DeletedAt = DateTime.UtcNow;
+        category.DeletedBy = userId;
 
         await _unitOfWork.Categories.RemoveAsync(category);
         await _unitOfWork.SaveChangesAsync();
