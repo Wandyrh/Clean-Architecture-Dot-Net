@@ -8,6 +8,7 @@ using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using CleanArchitecture.Application.Common;
 
 namespace CleanArchitecture.Application.Services;
 
@@ -32,7 +33,7 @@ public class ProductCategoryService : IProductCategoryService
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(id);
         if (category is null)
-            throw new NotFoundException("Product Category was not found");
+            throw new NotFoundException(AppMessages.ProductCategoryNotFound);
 
         return _mapper.Map<ProductCategoryDto>(category);
     }
@@ -50,11 +51,11 @@ public class ProductCategoryService : IProductCategoryService
     public async Task UpdateAsync(UpdateProductCategoryDto dto, Guid id, Guid userId)
     {
         if (id != dto.Id)
-            throw new IDMismatchException("ID mismatch");
+            throw new IDMismatchException(AppMessages.ProductCategoryIdMismatch);
 
         var category = await _unitOfWork.Categories.GetByIdAsync(dto.Id);
         if (category is null)
-            throw new NotFoundException($"Product Category {dto.Id} was not found");
+            throw new NotFoundException(AppMessages.ProductCategoryNotFound);
 
         category.ModifiedAt = DateTime.UtcNow;
         category.ModifiedBy = userId;
@@ -68,7 +69,7 @@ public class ProductCategoryService : IProductCategoryService
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(id);
         if (category is null)
-            throw new NotFoundException("Product Category was not found");
+            throw new NotFoundException(AppMessages.ProductCategoryNotFound);
         
         category.DeletedAt = DateTime.UtcNow;
         category.DeletedBy = userId;
