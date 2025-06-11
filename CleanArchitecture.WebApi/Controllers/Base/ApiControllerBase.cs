@@ -41,5 +41,15 @@ namespace CleanArchitecture.WebApi.Controllers.Base
             var request = new BaseEntityDto() { Id = id };
             await ValidateRequest(request);
         }
+
+        protected async Task<Guid> ValidateTokenUserId()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                throw new UnauthorizedAccessException("User not authenticated");
+
+            await ValidateBaseEntity(userId);
+            return userId;
+        }
     }
 }

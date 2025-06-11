@@ -37,16 +37,17 @@ public class ProductService : IProductService
         return _mapper.Map<ProductDto>(product);
     }
 
-    public async Task AddAsync(CreateProductDto dto)
+    public async Task AddAsync(CreateProductDto dto, Guid userId)
     {
         var product = _mapper.Map<Product>(dto);
         product.CreatedAt = DateTime.UtcNow;
-        product.CreatedBy = Guid.NewGuid();
+        product.CreatedBy = userId;
+        
         await _unitOfWork.Products.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(UpdateProductDto dto, Guid id)
+    public async Task UpdateAsync(UpdateProductDto dto, Guid id, Guid userId)
     {
         if (id != dto.Id)
             throw new IDMismatchException("ID mismatch");
@@ -55,17 +56,22 @@ public class ProductService : IProductService
         if (product is null)
             throw new NotFoundException($"Product {dto.Id} was not found");
 
+        product.ModifiedAt = DateTime.UtcNow;
+        product.ModifiedBy = userId;
         _mapper.Map(dto, product);
 
         await _unitOfWork.Products.UpdateAsync(product);
         await _unitOfWork.SaveChangesAsync();
-    }
+    }  
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product is null)
             throw new NotFoundException("Product was not found");
+       
+        product.DeletedAt = DateTime.UtcNow;
+        product.DeletedBy = userId;
 
         await _unitOfWork.Products.RemoveAsync(product);
         await _unitOfWork.SaveChangesAsync();

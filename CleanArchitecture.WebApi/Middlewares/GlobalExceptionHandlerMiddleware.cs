@@ -53,6 +53,9 @@ public class GlobalExceptionHandlerMiddleware
             case NotFoundException:
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 break;
+            case UnauthorizedAccessException:
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                break;
             default:
                 apiResult.Message = "Internal Server Error";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

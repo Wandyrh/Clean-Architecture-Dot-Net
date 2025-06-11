@@ -42,25 +42,28 @@ public class UsersController : ApiControllerBase<UsersController>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserDto dto)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateRequest(dto);
-        await _UserService.AddAsync(dto);
+        await _UserService.AddAsync(dto, userId);
         return Ok(ApiResult<string>.SuccessResult("User created successfully"));
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserDto dto)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateBaseEntity(id);
         await ValidateRequest(dto);
-        await _UserService.UpdateAsync(dto, id);
+        await _UserService.UpdateAsync(dto, id, userId);
         return Ok(ApiResult<string>.SuccessResult("User updated successfully"));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateBaseEntity(id);
-        await _UserService.DeleteAsync(id);
+        await _UserService.DeleteAsync(id, userId);
         return Ok(ApiResult<string>.SuccessResult("User deleted successfully"));
     }
 
