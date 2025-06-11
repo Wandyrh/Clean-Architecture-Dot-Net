@@ -1,8 +1,9 @@
-﻿namespace CleanArchitecture.Domain.Entities;
+﻿using CleanArchitecture.Domain.Entities.BaseEntities;
 
-public class ProductCategory
-{
-    public Guid Id { get; set; } = Guid.NewGuid();
+namespace CleanArchitecture.Domain.Entities;
+
+public class ProductCategory : AuditableEntity
+{   
     public string Name { get; set; }
     public string Description { get; set; }    
 

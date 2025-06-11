@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Extensions;
 using CleanArchitecture.Application.Common.Models;
+using CleanArchitecture.Application.Common;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Domain.Entities;
@@ -27,34 +29,50 @@ public class ProductService : IProductService
         return _mapper.Map<IEnumerable<ProductDto>>(products);
     }
 
-    public async Task<ProductDto?> GetByIdAsync(Guid id)
+    public async Task<ProductDto> GetByIdAsync(Guid id)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
-        return product is null ? null : _mapper.Map<ProductDto>(product);
+        if (product is null)
+            throw new NotFoundException(AppMessages.ProductNotFound);
+
+        return _mapper.Map<ProductDto>(product);
     }
 
-    public async Task AddAsync(CreateProductDto dto)
+    public async Task AddAsync(CreateProductDto dto, Guid userId)
     {
         var product = _mapper.Map<Product>(dto);
+        product.CreatedAt = DateTime.UtcNow;
+        product.CreatedBy = userId;
+        
         await _unitOfWork.Products.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(UpdateProductDto dto)
+    public async Task UpdateAsync(UpdateProductDto dto, Guid id, Guid userId)
     {
-        var product = await _unitOfWork.Products.GetByIdAsync(dto.Id);
-        if (product is null) return;
+        if (id != dto.Id)
+            throw new IDMismatchException(AppMessages.ProductIdMismatch);
 
+        var product = await _unitOfWork.Products.GetByIdAsync(dto.Id);
+        if (product is null)
+            throw new NotFoundException(AppMessages.ProductNotFound);
+
+        product.ModifiedAt = DateTime.UtcNow;
+        product.ModifiedBy = userId;
         _mapper.Map(dto, product);
 
         await _unitOfWork.Products.UpdateAsync(product);
         await _unitOfWork.SaveChangesAsync();
-    }
+    }  
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
-        if (product is null) return;
+        if (product is null)
+            throw new NotFoundException(AppMessages.ProductNotFound);
+       
+        product.DeletedAt = DateTime.UtcNow;
+        product.DeletedBy = userId;
 
         await _unitOfWork.Products.RemoveAsync(product);
         await _unitOfWork.SaveChangesAsync();

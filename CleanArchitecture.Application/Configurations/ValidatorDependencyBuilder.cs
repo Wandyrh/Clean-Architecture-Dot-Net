@@ -10,7 +10,7 @@ public class ValidatorDependencyBuilder : IDependencyBuilder
 
     public void Build(IServiceCollection services)
     {
-        services.AddScoped(provider =>
+        services.AddSingleton(provider =>
         {
             var dict = new Dictionary<Type, IValidator>();
 

@@ -2,24 +2,27 @@
 using CleanArchitecture.Application.Common.Models;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.WebApi.Common.Models;
+using CleanArchitecture.WebApi.Common;
 using CleanArchitecture.WebApi.Controllers.Base;
-using CleanArchitecture.WebApi.Models;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanArchitecture.WebApi.Controllers.V1;
 
+[Authorize]
 [ApiVersion("1.0")]
 [Route("api/v1/[controller]")]
 public class ProductsController : ApiControllerBase<ProductsController>
 {
-    private readonly IProductService _productService;   
+    private readonly IProductService _productService;
 
     public ProductsController(ILogger<ProductsController> logger,
         Dictionary<Type, IValidator> validators,
         IProductService productService) : base(logger, validators)
     {
-        _productService = productService ?? throw new ArgumentNullException(nameof(productService));        
+        _productService = productService ?? throw new ArgumentNullException(nameof(productService));
     }
 
     [HttpGet]
@@ -32,38 +35,36 @@ public class ProductsController : ApiControllerBase<ProductsController>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        await ValidateBaseEntity(id);
         var product = await _productService.GetByIdAsync(id);
-        if (product == null)
-            return NotFound(ApiResult<string>.Fail("Product not found"));
-
         return Ok(ApiResult<ProductDto>.SuccessResult(product));
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
     {
+        var userId = await ValidateTokenUserId();
         await ValidateRequest(dto);
-        await _productService.AddAsync(dto);
-        return Ok(ApiResult<string>.SuccessResult("Product created successfully"));
+        await _productService.AddAsync(dto, userId);
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.ProductCreated));
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductDto dto)
     {
+        var userId = await ValidateTokenUserId();
+        await ValidateBaseEntity(id);
         await ValidateRequest(dto);
-
-        if (id != dto.Id)
-            return BadRequest(ApiResult<string>.Fail("ID mismatch"));
-
-        await _productService.UpdateAsync(dto);
-        return Ok(ApiResult<string>.SuccessResult("Product updated successfully"));
+        await _productService.UpdateAsync(dto, id, userId);
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.ProductUpdated));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _productService.DeleteAsync(id);
-        return Ok(ApiResult<string>.SuccessResult("Product deleted successfully"));
+        var userId = await ValidateTokenUserId();
+        await _productService.DeleteAsync(id, userId);
+        return Ok(ApiResult<string>.SuccessResult(AppMessages.ProductDeleted));
     }
 
     [HttpGet("paged")]

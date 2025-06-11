@@ -1,5 +1,7 @@
-﻿using CleanArchitecture.Domain.Entities;
+﻿using CleanArchitecture.Domain.Interfaces;
+using CleanArchitecture.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace CleanArchitecture.Infrastructure.Persistence;
 
@@ -10,14 +12,27 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<Product> Product { get; set; }
-    public DbSet<ProductCategory> ProductCategory { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        builder.ApplyConfiguration(new ProductConfiguration());
+        builder.ApplyConfiguration(new ProductCategoryConfiguration());
+        builder.ApplyConfiguration(new UserConfiguration());
 
-        modelBuilder.Entity<Product>().HasKey(p => p.Id);
-        modelBuilder.Entity<ProductCategory>().HasKey(p => p.Id);
+        foreach (var entityType in builder.Model.GetEntityTypes())
+        {
+            if (typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = Expression.Parameter(entityType.ClrType, "_");
+                var filter = Expression.Lambda(
+                    Expression.Equal(
+                        Expression.Property(parameter, nameof(ISoftDeletable.IsDeleted)),
+                Expression.Constant(false)
+                ),
+                    parameter
+                );
+
+                builder.Entity(entityType.ClrType).HasQueryFilter(filter);
+            }
+        }
     }
 }
