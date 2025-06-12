@@ -41,7 +41,7 @@ public class ProductService : IProductService
             return cachedProducts;
         }
 
-        var products = await _unitOfWork.Products.GetAllAsync();
+        var products = await _unitOfWork.Products.GetAllWithCategoryAsync();
         var dtoList = _mapper.Map<IEnumerable<ProductDto>>(products);
 
         _cache.Set(cacheKey, dtoList, new MemoryCacheEntryOptions
@@ -60,7 +60,7 @@ public class ProductService : IProductService
             return cachedProduct;
         }
 
-        var product = await _unitOfWork.Products.GetByIdAsync(id);
+        var product = await _unitOfWork.Products.GetByIdWithCategoryAsync(id);
         if (product is null)
             throw new NotFoundException(AppMessages.ProductNotFound);
 
@@ -135,6 +135,7 @@ public class ProductService : IProductService
 
         var query = _unitOfWork.Products
             .GetAll()
+            .Include(p => p.Category)
             .AsNoTracking()
             .OrderBy(_ => _.Name)
             .ProjectTo<ProductDto>(_mapper.ConfigurationProvider);
