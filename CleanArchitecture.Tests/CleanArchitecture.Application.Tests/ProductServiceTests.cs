@@ -3,6 +3,9 @@ using CleanArchitecture.Application.Services;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Domain.Interfaces;
 using CleanArchitecture.Domain.Entities;
+using CleanArchitecture.Application.Common.Models;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace CleanArchitecture.Application.Tests;
 
@@ -10,6 +13,9 @@ public class ProductServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IMapper> _mapper = new();
+    private readonly IMemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
+    private readonly IOptions<CacheSettings> _cacheSettings =
+        Options.Create(new CacheSettings { TimeInMinutes = 10 });
 
     [Fact]
     public async Task GetAllAsync_ReturnsProductDtos()
@@ -18,13 +24,13 @@ public class ProductServiceTests
         _unitOfWork.Setup(u => u.Products.GetAllAsync()).ReturnsAsync(products);
         _mapper.Setup(m => m.Map<IEnumerable<ProductDto>>(products)).Returns(new List<ProductDto> { new ProductDto { Name = "Test" } });
 
-        var service = new ProductService(_unitOfWork.Object, _mapper.Object);
+        var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);
 
         var result = await service.GetAllAsync();
 
         Assert.NotNull(result);
     }
-[Fact]
+    [Fact]
     public async Task GetByIdAsync_ReturnsProductDto()
     {
         var id = Guid.NewGuid();
@@ -32,7 +38,7 @@ public class ProductServiceTests
         _unitOfWork.Setup(u => u.Products.GetByIdAsync(id)).ReturnsAsync(product);
         _mapper.Setup(m => m.Map<ProductDto>(product)).Returns(new ProductDto { Name = "Test" });
 
-        var service = new ProductService(_unitOfWork.Object, _mapper.Object);
+        var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);
 
         var result = await service.GetByIdAsync(id);
 
@@ -50,7 +56,7 @@ public class ProductServiceTests
         _unitOfWork.Setup(u => u.Products.AddAsync(It.IsAny<Product>())).Returns(Task.CompletedTask);
         _unitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
-        var service = new ProductService(_unitOfWork.Object, _mapper.Object);
+        var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);
 
         await service.AddAsync(dto, userId);
 
@@ -70,7 +76,7 @@ public class ProductServiceTests
         _unitOfWork.Setup(u => u.Products.UpdateAsync(It.IsAny<Product>())).Returns(Task.CompletedTask);
         _unitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
-        var service = new ProductService(_unitOfWork.Object, _mapper.Object);
+        var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);
 
         await service.UpdateAsync(dto, id, userId);
 
@@ -89,7 +95,7 @@ public class ProductServiceTests
         _unitOfWork.Setup(u => u.Products.RemoveAsync(It.IsAny<Product>())).Returns(Task.CompletedTask);
         _unitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
 
-        var service = new ProductService(_unitOfWork.Object, _mapper.Object);
+        var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);
 
         await service.DeleteAsync(id, userId);
 
@@ -100,7 +106,7 @@ public class ProductServiceTests
     [Fact]
     public async Task GetPagedAsync_ReturnsPagedResult()
     {
-        var service = new ProductService(_unitOfWork.Object, _mapper.Object);
+        var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);
 
         await Assert.ThrowsAsync<NullReferenceException>(() => service.GetPagedAsync(1, 10));
     }
