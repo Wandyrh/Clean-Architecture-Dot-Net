@@ -42,7 +42,7 @@ public class AuthenticationControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var apiResult = Assert.IsType<ApiResult<LoginUserResponseDTO>>(okResult.Value);
         Assert.True(apiResult.Success);
-        Assert.Equal(loginResponse.AccessToken, apiResult.Data.AccessToken);
+        Assert.Equal(loginResponse.AccessToken, apiResult?.Data?.AccessToken);
     }
 
     [Fact]
