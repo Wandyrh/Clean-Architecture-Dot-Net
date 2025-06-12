@@ -21,7 +21,7 @@ public class ProductServiceTests
     public async Task GetAllAsync_ReturnsProductDtos()
     {
         var products = new List<Product> { new Product { Id = Guid.NewGuid(), Name = "Test" } };
-        _unitOfWork.Setup(u => u.Products.GetAllAsync()).ReturnsAsync(products);
+        _unitOfWork.Setup(u => u.Products.GetAllWithCategoryAsync()).ReturnsAsync(products);
         _mapper.Setup(m => m.Map<IEnumerable<ProductDto>>(products)).Returns(new List<ProductDto> { new ProductDto { Name = "Test" } });
 
         var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);
@@ -35,7 +35,7 @@ public class ProductServiceTests
     {
         var id = Guid.NewGuid();
         var product = new Product { Id = id, Name = "Test" };
-        _unitOfWork.Setup(u => u.Products.GetByIdAsync(id)).ReturnsAsync(product);
+        _unitOfWork.Setup(u => u.Products.GetByIdWithCategoryAsync(id)).ReturnsAsync(product);
         _mapper.Setup(m => m.Map<ProductDto>(product)).Returns(new ProductDto { Name = "Test" });
 
         var service = new ProductService(_unitOfWork.Object, _mapper.Object, _memoryCache, _cacheSettings);

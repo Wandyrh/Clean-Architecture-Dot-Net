@@ -14,4 +14,14 @@ public class ProductRepository : GenericRepository<Product>, IProductRepository
     {
         return await _dbSet.Where(p => p.CategoryId == categoryId).ToListAsync();
     }
+
+    public async Task<IEnumerable<Product>> GetAllWithCategoryAsync()
+    {
+        return await _dbSet.Include(p => p.Category).ToListAsync();
+    }
+
+    public async Task<Product?> GetByIdWithCategoryAsync(Guid id)
+    {
+        return await _dbSet.Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == id);
+    }
 }
