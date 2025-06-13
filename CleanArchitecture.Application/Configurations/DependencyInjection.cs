@@ -19,14 +19,15 @@ public static class DependencyInjection
         ArgumentException.ThrowIfNullOrWhiteSpace(jwtOptions.Issuer);
         ArgumentException.ThrowIfNullOrWhiteSpace(jwtOptions.Secret);
 
-        services.AddSingleton(jwtOptions);
-        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());        
+        services.AddSingleton(jwtOptions);        
+        services.Configure<CacheSettings>(options => configuration.GetSection("CacheSettings").Bind(options));
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IProductCategoryService, ProductCategoryService>();
-
+    
         return services;
     }
 }
