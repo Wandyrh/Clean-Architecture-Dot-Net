@@ -56,6 +56,7 @@ The solution follows the Clean Architecture pattern, with clear separation of co
 
 - [.NET 8 SDK or later](https://dotnet.microsoft.com/download)
 - SQL Server (or compatible, update connection string as needed)
+  - The database for this project is managed in the repository [https://github.com/Wandyrh/Portfolio-DB](https://github.com/Wandyrh/Portfolio-DB), which is a Visual Studio SQL project for version and change control.
 - (Optional) Docker (for containerized deployment)
 
 ---
