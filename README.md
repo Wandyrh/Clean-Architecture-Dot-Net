@@ -2,6 +2,8 @@
 
 This project is a backend portfolio demonstration by **Wandy Rodríguez**, showcasing software development using **.NET C#** and the **Clean Architecture** pattern. It is designed to illustrate best practices in maintainable, scalable, and testable backend API development.
 
+**Project URL:** [https://github.com/Wandyrh/Clean-Architecture-Dot-Net](https://github.com/Wandyrh/Clean-Architecture-Dot-Net)
+
 ---
 
 ## Table of Contents
@@ -26,13 +28,16 @@ This API provides CRUD operations for Products, Product Categories, and Users, w
 ---
 
 ## Tech Stack
-
+ 
 - .NET 8 (C#)
 - ASP.NET Core Web API
 - Entity Framework Core
 - AutoMapper
 - FluentValidation
 - JWT Authentication
+- In-Memory Caching (IMemoryCache)
+- Health Checks (`/health` endpoint)
+- Unit Testing: xUnit & Moq
 
 ---
 
@@ -59,7 +64,7 @@ The solution follows the Clean Architecture pattern, with clear separation of co
 
 1. **Clone the repository:**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/Wandyrh/Clean-Architecture-Dot-Net
    cd Clean-Architecture-Dot-Net
    ```
 
@@ -92,11 +97,12 @@ The solution follows the Clean Architecture pattern, with clear separation of co
    ```
 
 ---
-
+ 
 ## Running the Application
-
+ 
 - The API will be available at `https://localhost:5001` or `http://localhost:5000` by default.
 - Use Swagger UI (if enabled) at `/swagger` for interactive API documentation.
+- Health check endpoint available at `/health`.
 
 ---
 
@@ -137,6 +143,21 @@ The solution follows the Clean Architecture pattern, with clear separation of co
 
 ---
 
+## Caching
+
+- The application uses in-memory caching (`IMemoryCache`) for product lists and paged results to improve performance.
+- Cache duration is configurable via `CacheSettings` in `appsettings.json`.
+
+---
+
+## Unit Testing
+
+- Unit tests are implemented using [xUnit](https://xunit.net/) and [Moq](https://github.com/moq/moq4).
+- Tests cover service logic, caching, and error handling.
+- Example test file: `CleanArchitecture.Tests/CleanArchitecture.Application.Tests/ProductServiceTests.cs`.
+
+---
+ 
 ## Security
 
 - **Authentication**: JWT Bearer tokens are required for all endpoints except `/authentication/login`.
@@ -158,6 +179,9 @@ Key sections in `appsettings.json`:
   "Audience": "your-audience",
   "Secret": "your-very-strong-secret-key",
   "ExpiryHours": 24
+},
+"CacheSettings": {
+  "TimeInMinutes": 10
 }
 ```
 
