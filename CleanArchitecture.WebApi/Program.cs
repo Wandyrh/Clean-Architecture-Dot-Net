@@ -5,7 +5,6 @@ using CleanArchitecture.Infrastructure.Configurations;
 using CleanArchitecture.WebApi.Middlewares;
 using CleanArchitecture.WebApi.Configuration.Security;
 using Microsoft.OpenApi.Models;
-using CleanArchitecture.Application.Common.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

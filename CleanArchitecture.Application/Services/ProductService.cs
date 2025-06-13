@@ -77,7 +77,6 @@ public class ProductService : IProductService
         var product = _mapper.Map<Product>(dto);
         product.CreatedAt = DateTime.UtcNow;
         product.CreatedBy = userId;
-
         await _unitOfWork.Products.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
 
@@ -113,7 +112,6 @@ public class ProductService : IProductService
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product is null)
             throw new NotFoundException(AppMessages.ProductNotFound);
-
         product.DeletedAt = DateTime.UtcNow;
         product.DeletedBy = userId;
 
