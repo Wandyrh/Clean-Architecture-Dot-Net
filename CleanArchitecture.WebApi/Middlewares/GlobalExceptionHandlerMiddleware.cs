@@ -48,13 +48,35 @@ public class GlobalExceptionHandlerMiddleware
                 break;
             case ValidationException:
             case IDMismatchException:
+            case InvalidLoginException:
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 break;
             case NotFoundException:
+            case KeyNotFoundException:
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 break;
             case UnauthorizedAccessException:
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                break;  
+            case TimeoutException:
+                context.Response.StatusCode = (int)HttpStatusCode.GatewayTimeout;
+                apiResult.Message = "Request timed out";
+                break;
+            case NotImplementedException:
+                context.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
+                apiResult.Message = "Not implemented";
+                break;
+            case FormatException:
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                apiResult.Message = "Invalid format";
+                break;
+            case OperationCanceledException:
+                context.Response.StatusCode = (int)HttpStatusCode.RequestTimeout;
+                apiResult.Message = "Request was cancelled";
+                break;
+            case var ex when exception.GetType().Name == "DbUpdateException":
+                context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+                apiResult.Message = "Database update error";
                 break;
             default:
                 apiResult.Message = "Internal Server Error";
@@ -64,7 +86,11 @@ public class GlobalExceptionHandlerMiddleware
 
         _logger.LogError(exception, "An error has occurred: {Message}", exception.Message);
 
-        var exceptionResult = JsonConvert.SerializeObject(apiResult);
+        var settings = new JsonSerializerSettings
+        {
+            ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+        };
+        var exceptionResult = JsonConvert.SerializeObject(apiResult, settings);
         return context.Response.WriteAsync(exceptionResult);
     }
 }
