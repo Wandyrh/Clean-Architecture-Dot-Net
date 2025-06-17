@@ -152,24 +152,13 @@ public class ProductService : IProductService
     {
         if (_cache is MemoryCache memCache)
         {
-            var entries = memCache.GetType()
-                .GetProperty("EntriesCollection", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.GetValue(memCache) as System.Collections.ICollection;
+            var entries = memCache.Keys != null
+                ? memCache.Keys.Where(key => key != null && key.ToString()!.StartsWith("products_paged_"))
+                : Enumerable.Empty<object>();
 
             if (entries != null)
-            {
-                var keysToRemove = new List<object>();
-                foreach (var entry in entries)
-                {
-                    var entryType = entry.GetType();
-                    var keyProp = entryType.GetProperty("Key");
-                    var key = keyProp?.GetValue(entry);
-                    if (key is string strKey && strKey.StartsWith("products_paged_"))
-                    {
-                        keysToRemove.Add(key);
-                    }
-                }
-                foreach (var key in keysToRemove)
+            {                
+                foreach (var key in entries)
                 {
                     memCache.Remove(key);
                 }
