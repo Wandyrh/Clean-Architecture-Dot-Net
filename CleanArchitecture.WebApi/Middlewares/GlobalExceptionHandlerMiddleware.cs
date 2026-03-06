@@ -40,51 +40,95 @@ public class GlobalExceptionHandlerMiddleware
         context.Response.ContentType = "application/json";
         apiResult.Message = exception.Message;
 
+        var statusCode = HttpStatusCode.InternalServerError;
+        var logLevel = LogLevel.Error;
+
         switch (exception)
         {
             case ArgumentException:
             case InvalidOperationException:
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                statusCode = HttpStatusCode.InternalServerError;
+                logLevel = LogLevel.Error;
                 break;
-            case ValidationException:
+            case ValidationException validationEx:
+                statusCode = HttpStatusCode.BadRequest;
+                logLevel = LogLevel.Warning;
+                _logger.LogWarning(validationEx, 
+                    "Validation error occurred. Path: {Path}, ValidationErrors: {@ValidationErrors}", 
+                    context.Request.Path,
+                    validationEx.Errors);
+                break;
             case IDMismatchException:
             case InvalidLoginException:
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                statusCode = HttpStatusCode.BadRequest;
+                logLevel = LogLevel.Warning;
                 break;
             case NotFoundException:
             case KeyNotFoundException:
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                statusCode = HttpStatusCode.NotFound;
+                logLevel = LogLevel.Warning;
                 break;
             case UnauthorizedAccessException:
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                statusCode = HttpStatusCode.Unauthorized;
+                logLevel = LogLevel.Warning;
                 break;  
             case TimeoutException:
-                context.Response.StatusCode = (int)HttpStatusCode.GatewayTimeout;
+                statusCode = HttpStatusCode.GatewayTimeout;
                 apiResult.Message = "Request timed out";
+                logLevel = LogLevel.Error;
                 break;
             case NotImplementedException:
-                context.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
+                statusCode = HttpStatusCode.NotImplemented;
                 apiResult.Message = "Not implemented";
+                logLevel = LogLevel.Warning;
                 break;
             case FormatException:
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                statusCode = HttpStatusCode.BadRequest;
                 apiResult.Message = "Invalid format";
+                logLevel = LogLevel.Warning;
                 break;
             case OperationCanceledException:
-                context.Response.StatusCode = (int)HttpStatusCode.RequestTimeout;
+                statusCode = HttpStatusCode.RequestTimeout;
                 apiResult.Message = "Request was cancelled";
+                logLevel = LogLevel.Information;
                 break;
             case var ex when exception.GetType().Name == "DbUpdateException":
-                context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+                statusCode = HttpStatusCode.Conflict;
                 apiResult.Message = "Database update error";
+                logLevel = LogLevel.Error;
                 break;
             default:
                 apiResult.Message = "Internal Server Error";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                statusCode = HttpStatusCode.InternalServerError;
+                logLevel = LogLevel.Error;
                 break;
         }
 
-        _logger.LogError(exception, "An error has occurred: {Message}", exception.Message);
+        context.Response.StatusCode = (int)statusCode;
+        
+        if (logLevel == LogLevel.Warning || exception is ValidationException)
+        {
+            _logger.LogWarning(exception,
+                "Exception handled: {ExceptionType} | StatusCode: {StatusCode} | Path: {Path} | Method: {Method} | RemoteIP: {RemoteIP} | Message: {Message}",
+                exception.GetType().Name,
+                (int)statusCode,
+                context.Request.Path,
+                context.Request.Method,
+                context.Connection.RemoteIpAddress,
+                exception.Message);
+        }
+        else
+        {
+            _logger.LogError(exception,
+                "Unhandled exception: {ExceptionType} | StatusCode: {StatusCode} | Path: {Path} | Method: {Method} | RemoteIP: {RemoteIP} | Message: {Message} | StackTrace: {StackTrace}",
+                exception.GetType().Name,
+                (int)statusCode,
+                context.Request.Path,
+                context.Request.Method,
+                context.Connection.RemoteIpAddress,
+                exception.Message,
+                exception.StackTrace);
+        }
 
         var settings = new JsonSerializerSettings
         {
