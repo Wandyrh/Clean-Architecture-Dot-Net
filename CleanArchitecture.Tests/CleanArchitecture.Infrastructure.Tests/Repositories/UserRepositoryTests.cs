@@ -40,14 +40,11 @@ public class UserRepositoryTests
     }
 
     [Fact]
-    public async Task GetUserByEmailAsync_Throws_WhenEmailDoesNotExist()
+    public async Task GetUserByEmailAsync_Return_Null_WhenEmailDoesNotExist()
     {       
         var context = GetInMemoryDbContext();
         var repository = new UserRepository(context);
-     
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await repository.GetUserByEmailAsync("notfound@example.com");
-        });
+        var resilt = await repository.GetUserByEmailAsync("notfound@example.com");
+        Assert.Null(resilt);       
     }
 }

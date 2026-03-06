@@ -4,7 +4,6 @@ using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Infrastructure.Configurations;
 using CleanArchitecture.WebApi.Middlewares;
 using CleanArchitecture.WebApi.Configuration.Security;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,33 +33,7 @@ builder.Services.AddHealthChecks();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "JWT in format: Bearer <token>"
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplication(builder.Configuration);
 
@@ -68,7 +41,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
 builder.Services.AddInfrastructure(connectionString);
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 
