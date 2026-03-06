@@ -4,103 +4,108 @@ using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Infrastructure.Configurations;
 using CleanArchitecture.WebApi.Middlewares;
 using CleanArchitecture.WebApi.Configuration.Security;
-using Microsoft.OpenApi.Models;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-// Add services to the container.
-builder.Services.AddApiVersioning(options =>
+Log.Information("Starting web application");
+
+try
 {
-    options.AssumeDefaultVersionWhenUnspecified = true;
-    options.DefaultApiVersion = new ApiVersion(1, 0);
-    options.ReportApiVersions = true;
-    options.ApiVersionReader = new UrlSegmentApiVersionReader();
-});
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(builder =>
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .Enrich.WithEnvironmentName());
+
+    builder.Services.AddApiVersioning(options =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyHeader()
-               .AllowAnyMethod();
-    });
-});
-
-
-builder.Services.AddControllers();
-builder.Services.AddMemoryCache();
-builder.Services.AddHealthChecks();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "JWT in format: Bearer <token>"
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.DefaultApiVersion = new ApiVersion(1, 0);
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    builder.Services.AddCors(options =>
     {
+        options.AddDefaultPolicy(builder =>
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
+            builder.AllowAnyOrigin()
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
     });
-});
 
-builder.Services.AddApplication(builder.Configuration);
+    builder.Services.AddControllers();
+    builder.Services.AddMemoryCache();
+    builder.Services.AddHealthChecks();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+    builder.Services.AddApplication(builder.Configuration);
 
-builder.Services.AddInfrastructure(connectionString);
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddAuthentication(builder.Configuration);
-builder.Services.AddAuthorization();
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
-var builders = AppDomain.CurrentDomain.GetAssemblies()
-    .SelectMany(s => s.GetTypes())
-    .Where(p => typeof(IDependencyBuilder).IsAssignableFrom(p) && p != typeof(IDependencyBuilder))
-    .Select(t => Activator.CreateInstance(t) as IDependencyBuilder)
-    .OrderBy(b => b!.LoadOrder);
+    builder.Services.AddInfrastructure(connectionString);
+    builder.Services.AddAuthentication(builder.Configuration);
+    builder.Services.AddAuthorization();
 
-foreach (var dependencyBuilder in builders)
-{
-    dependencyBuilder?.Build(builder.Services);
+    var builders = AppDomain.CurrentDomain.GetAssemblies()
+        .SelectMany(s => s.GetTypes())
+        .Where(p => typeof(IDependencyBuilder).IsAssignableFrom(p) && p != typeof(IDependencyBuilder))
+        .Select(t => Activator.CreateInstance(t) as IDependencyBuilder)
+        .OrderBy(b => b!.LoadOrder);
+
+    foreach (var dependencyBuilder in builders)
+    {
+        dependencyBuilder?.Build(builder.Services);
+    }
+
+    var app = builder.Build();
+
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+            diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress);
+            diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+        };
+    });
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseCors();
+
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+    app.MapHealthChecks("/health");
+
+    app.Run();
 }
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+catch (Exception ex)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    Log.Fatal(ex, "Application terminated unexpectedly");
 }
-
-app.UseCors();
-
-app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-app.MapHealthChecks("/health");
- 
-app.Run();
+finally
+{
+    Log.CloseAndFlush();
+}

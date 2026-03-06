@@ -22,7 +22,7 @@ public static class DependencyInjection
         services.AddSingleton(jwtOptions);        
         services.Configure<CacheSettings>(options => configuration.GetSection("CacheSettings").Bind(options));
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        services.AddAutoMapper( config => config.AddMaps(Assembly.GetExecutingAssembly()));
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
